@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Irrigation System</string>
+    <string name="default_label">lorem ipsum</string>
+    <string name="default_time">30 Min</string>
+    <string name="start_label">Start</string>
+    <string name="stop_label">Stop</string>
+    <string name="null_label">No Current Job</string>
+    <string name="total_label">Total 90 Minutes</string>
+    <string name="testmode_label">Test (Seconds Instead Of Minutes)</string>
+
+    <string name="start_job">Job Started!</string>
+    <string name="stop_job">Job Stopped!</string>
+
+    <string name="ip">10.0.0.250</string>
+
+    <string-array name="zones">
+        <item>Front Yard</item>
+        <item>Back Yard Pool</item>
+        <item>Back Yard Shed</item>
+    </string-array>
+</resources>
