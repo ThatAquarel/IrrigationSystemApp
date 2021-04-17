@@ -2,10 +2,8 @@ package me.aqua_rel.irrigationsystem;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
