@@ -1,7 +1,6 @@
 package me.aqua_rel.irrigationsystem;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.widget.TextView;
 
 public class Job {
@@ -9,9 +8,9 @@ public class Job {
     private int backyard1 = 30;
     private int backyard2 = 30;
 
-    private MainActivity mainActivity;
+    private final MainActivity mainActivity;
 
-    public Job(MainActivity _mainActivity){
+    public Job(MainActivity _mainActivity) {
         this.mainActivity = _mainActivity;
     }
 

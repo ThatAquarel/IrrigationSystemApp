@@ -1,5 +1,11 @@
 package me.aqua_rel.irrigationsystem;
 
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,12 +13,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.annotation.SuppressLint;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,11 +35,28 @@ public class MainActivity extends AppCompatActivity {
         s1 = getResources().getStringArray(R.array.zones);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
+
         final MyAdapter myAdapter = new MyAdapter(this, s1, job);
         recyclerView.setAdapter(myAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END, 0) {
+        final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END, 0) {
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return false;
+            }
+
+            @Override
+            public boolean isItemViewSwipeEnabled() {
+                return false;
+            }
+
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
                 int positionDragged = dragged.getAdapterPosition();
@@ -57,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
+        myAdapter.setItemTouchHelper(itemTouchHelper);
 
-        final CheckBox checkBox = (CheckBox) findViewById(R.id.checkBox);
+        final CheckBox checkBox = findViewById(R.id.checkBox);
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ConstraintLayout start = (ConstraintLayout) findViewById(R.id.start);
+        ConstraintLayout start = findViewById(R.id.start);
         start.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -110,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ConstraintLayout stop = (ConstraintLayout) findViewById(R.id.stop);
+        ConstraintLayout stop = findViewById(R.id.stop);
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

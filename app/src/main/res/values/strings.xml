@@ -11,7 +11,7 @@
     <string name="start_job">Job Started!</string>
     <string name="stop_job">Job Stopped!</string>
 
-    <string name="ip">10.0.0.250</string>
+    <string name="ip">10.0.2.2</string>
 
     <string-array name="zones">
         <item>Front Yard</item>

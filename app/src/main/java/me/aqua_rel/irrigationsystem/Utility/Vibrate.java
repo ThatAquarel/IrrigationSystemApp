@@ -8,7 +8,7 @@ import android.os.Vibrator;
 import me.aqua_rel.irrigationsystem.MainActivity;
 
 public class Vibrate {
-    private MainActivity mainActivity;
+    private final MainActivity mainActivity;
 
     public Vibrate(MainActivity _mainActivity) {
         this.mainActivity = _mainActivity;

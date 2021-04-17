@@ -9,7 +9,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UdpClient {
-    public UdpClient(){
+    public UdpClient() {
     }
 
     public void request(String ip, int port, String msg) throws Exception {
@@ -17,16 +17,12 @@ public class UdpClient {
         DatagramSocket clientSocket = new DatagramSocket();
         InetAddress IPAddress = InetAddress.getByName(ip);
         byte[] sendData;
-        byte[] receiveData = new byte[1024];
+        //byte[] receiveData = new byte[1024];
         sendData = msg.getBytes();
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
         clientSocket.send(sendPacket);
-        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        //new DatagramPacket(receiveData, receiveData.length);
         clientSocket.close();
         Log.i("Udp Client", "Sent messsage \"" + msg + "\" to " + ip + ":" + port);
     }
 }
-
-//
-//
-//
