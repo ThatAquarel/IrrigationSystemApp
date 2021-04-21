@@ -2,6 +2,7 @@ package me.aqua_rel.irrigationsystem;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -14,14 +15,17 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 
-import me.aqua_rel.irrigationsystem.Utility.UdpClient;
-import me.aqua_rel.irrigationsystem.Utility.Vibrate;
+import me.aqua_rel.irrigationsystem.Utility.TcpClient;
 
 public class MainActivity extends AppCompatActivity {
     String[] s1;
+    String response;
     int multiplyFactor = 60;
 
     @Override
@@ -30,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final Job job = new Job(this);
-        final Vibrate vibrate = new Vibrate(this);
 
         s1 = getResources().getStringArray(R.array.zones);
 
@@ -59,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
-                int positionDragged = dragged.getAdapterPosition();
-                int positionTarget = target.getAdapterPosition();
+                int positionDragged = dragged.getAbsoluteAdapterPosition();
+                int positionTarget = target.getAbsoluteAdapterPosition();
 
                 Collections.swap(Arrays.asList(s1), positionDragged, positionTarget);
 
@@ -93,38 +96,19 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-                vibrate.click();
                 createAlert(getResources().getString(R.string.start_job));
 
-                final StringBuilder message = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
                 for (String string : s1) {
-                    switch (string) {
-                        case "Front Yard":
-                            message.append(string).append("=").append(job.getFrontyard() * multiplyFactor).append(",");
-                            break;
-                        case "Back Yard Pool":
-                            message.append(string).append("=").append(job.getBackyard1() * multiplyFactor).append(",");
-                            break;
-                        case "Back Yard Shed":
-                            message.append(string).append("=").append(job.getBackyard2() * multiplyFactor).append(",");
-                            break;
-                    }
+                    String tag = job.nameToTag(string);
+                    stringBuilder.append(tag).append("=").append(job.getJob(tag) * multiplyFactor).append(",");
                 }
+                String string = stringBuilder.toString();
+                Log.i("Stop job", string);
+                callTcp(string);
 
-                new Thread(new Runnable() {
-                    public void run() {
-                        UdpClient udpClient = new UdpClient();
-                        try {
-                            udpClient.request(getResources().getString(R.string.ip), 6969, message.toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-
-                int total = job.getFrontyard() + job.getBackyard1() + job.getBackyard2();
-                TextView textView = findViewById(R.id.stopText2);
-                textView.setText(total + " Minute Job");
+                TextView stopText = findViewById(R.id.stopText2);
+                stopText.setText(job.getTotal() + " Minute Job");
             }
         });
 
@@ -132,27 +116,24 @@ public class MainActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                vibrate.click();
                 createAlert(getResources().getString(R.string.stop_job));
 
-                new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            UdpClient udpClient = new UdpClient();
-                            udpClient.request(getResources().getString(R.string.ip), 6969, "Front Yard=0,Back Yard Pool=0,Back Yard Shed=0,");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
+                StringBuilder stringBuilder = new StringBuilder();
+                for (String string : s1) {
+                    String tag = job.nameToTag(string);
+                    stringBuilder.append(tag).append("=").append("0,");
+                }
+                String string = stringBuilder.toString();
+                Log.i("Stop job", string);
+                callTcp(string);
 
-                TextView textView = findViewById(R.id.stopText2);
-                textView.setText(getResources().getText(R.string.null_label));
+                TextView stopText = findViewById(R.id.stopText2);
+                stopText.setText(getResources().getText(R.string.null_label));
             }
         });
     }
 
-    public void createAlert(String text) {
+    private void createAlert(String text) {
         final AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Irrigation System")
                 .setMessage(text)
@@ -168,5 +149,47 @@ public class MainActivity extends AppCompatActivity {
                 },
                 500
         );
+    }
+
+    private void callTcp(final String text) {
+        new Thread(new NetworkThread(this, new NetworkCallback() {
+            @Override
+            public void callback() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView responseText = findViewById(R.id.response);
+                        responseText.setText(response.replace(" ", "\n"));
+                    }
+                });
+            }
+        }, text)).start();
+    }
+
+    private interface NetworkCallback {
+        void callback();
+    }
+
+    private static class NetworkThread implements Runnable {
+        NetworkCallback callback;
+        MainActivity mainActivity;
+        String text;
+
+        public NetworkThread(MainActivity mainActivity, NetworkCallback callback, String text) {
+            this.callback = callback;
+            this.mainActivity = mainActivity;
+            this.text = text;
+        }
+
+        public void run() {
+            TcpClient tcpClient = new TcpClient(mainActivity.getResources().getString(R.string.host), 6969);
+            try {
+                mainActivity.response = tcpClient.request(text);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            this.callback.callback();
+        }
     }
 }
